@@ -21,13 +21,30 @@ app.post('/api/users',async (req,res)=>{
 app.post('/api/users/:_id/exercises',async(req,res)=>{
   let userid=req.params._id;
   let result = await data.saveTask(userid,req.body);
+  let resDate= new Date(result.date).toDateString();
   res.json({
+    _id:userid,
     username:result.username,
-    description:result.description,
+    date:resDate,
     duration:result.duration,
-    date:result.date,
-    _id:result._id
+    description:result.description
   });
+});
+app.get('/api/users',async (req,res)=>{
+  let users = await data.getUserList();
+  res.json(users);
+});
+app.get('/api/users/:usrID/logs',async(req,res)=>{
+  const userID=req.params.usrID;
+  const {from,to,limit=0}=req.query;
+  if(from && to){
+    console.log(from+" - "+to+"-"+limit+" user: "+userID);
+    let result = await data.getUserLogsWithParam(userID,from,to,limit);
+    res.json(result);
+  }else{
+    let userLogs=await data.getUserLogs(userID);
+    res.json(userLogs);
+  }
 });
 
 
