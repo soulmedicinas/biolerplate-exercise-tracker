@@ -5,6 +5,8 @@ import { formatDate } from '../util';
 
 const db = getDB();
 
+// todo: Add body validity: for example date checking, checking if duration is a number etc.
+
 export const createExercise = async (req: Request, res: Response) => {
   const userId = req.params._id;
 
@@ -25,7 +27,7 @@ export const createExercise = async (req: Request, res: Response) => {
       });
     }
 
-    if (!duration || (duration as number) <= 0) {
+    if (!duration) {
       return res.status(400).json({
         message: 'No duration provided!',
       });
@@ -33,8 +35,6 @@ export const createExercise = async (req: Request, res: Response) => {
 
     let transformedDescription = description.trim();
     let transformedDate = date || formatDate(new Date());
-
-    // todo: Add correct date format checking
 
     const result = await db.run(
       'INSERT INTO Exercises (description, duration, date, userId) VALUES (?, ?, ?, ?)',

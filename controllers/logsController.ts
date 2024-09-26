@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { getDB } from '../src/initDb';
-import { CustomError } from '../types';
+import { User } from '../models/models';
 
 const db = getDB();
 
@@ -8,11 +8,11 @@ export const getLogs = async (req: Request, res: Response) => {
   const userId = req.params._id;
 
   try {
-    const user = await db.get('SELECT * FROM Users WHERE id = ?', userId);
+    const user: User = await db.get('SELECT * FROM Users WHERE id = ?', userId);
 
     if (!user) {
       return res.status(400).json({
-        message: `User with ${userId} does not exist!`,
+        message: `User with id = ${userId} does not exist!`,
       });
     }
 
@@ -32,6 +32,7 @@ export const getLogs = async (req: Request, res: Response) => {
 
     return res.status(201).json({
       message: "User's exercises fetched successfully",
+      username: user.username,
       logs: userExerciseLogs,
       count: userExerciseLogs.length,
     });

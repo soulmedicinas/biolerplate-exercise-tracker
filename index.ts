@@ -19,5 +19,7 @@ app.get('/', (_: Request, res: Response) => {
 app.use('/api', routes);
 
 const listener = app.listen(process.env.PORT || 3000, () => {
-  console.log('Your app is listening on port ' + (listener.address() as AddressInfo).port);
+  const port = (listener.address() as AddressInfo).port;
+  console.log('Your app is listening on port ' + port);
+  console.log(`Visit: http://localhost:${port}/`);
 });

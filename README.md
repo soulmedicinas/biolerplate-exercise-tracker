@@ -2,6 +2,11 @@
 
 This is the boilerplate for the Exercise Tracker project. Instructions for building your project can be found at https://www.freecodecamp.org/learn/apis-and-microservices/apis-and-microservices-projects/exercise-tracker
 
+# Starting the project locally:
+
+Run `npm run dev` to start the server.
+You can test API using the main html page or use Postman with `postman_collection.json`
+
 # Requirements
 
 - The API should return data in JSON format. Errors should be returned in JSON format as well, with an appropriate status code
