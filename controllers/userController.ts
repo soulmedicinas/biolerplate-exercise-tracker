@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { getDB } from '../src/initDb';
 import { CustomError } from '../types';
+import { User } from '../models/models';
 
 const db = getDB();
 
@@ -24,7 +25,7 @@ export const createUser = async (req: Request, res: Response) => {
       user: {
         id: createdUserId,
         username: transformedUserName,
-      },
+      } as User,
     });
   } catch (err) {
     const error = err as CustomError;
