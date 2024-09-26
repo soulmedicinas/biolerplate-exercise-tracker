@@ -12,6 +12,7 @@
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.16.4",
+    "promised-sqlite3": "^2.1.0",
     "sqlite3": "^5.1.7"
   },
   "repository": {
@@ -23,6 +24,7 @@
     "express"
   ],
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.7.2",
     "nodemon": "^3.1.7",

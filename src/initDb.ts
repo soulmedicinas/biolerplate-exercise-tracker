@@ -1,33 +1,14 @@
 import path from 'path';
 import fs from 'fs';
-import { Database, RunResult } from 'sqlite3';
-import util from 'util';
+import { Database } from 'sqlite3';
+import { AsyncDatabase } from 'promised-sqlite3';
 
 const DB_PATH = path.join(__dirname, '../db.db');
 const DB_SQL_PATH = path.join(__dirname, '../initDb.sql');
 
 const promisifySQLite3 = () => {
-  const db = new Database(DB_PATH);
-
-  const SQL3 = {
-    ...db,
-    run(sql: string, ...params: any) {
-      return new Promise((resolve, reject) => {
-        db.run(sql, ...params, (runResult: RunResult, err: Error | null) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(runResult);
-          }
-        });
-      });
-    },
-    get: util.promisify(db.get.bind(db)),
-    all: util.promisify(db.all.bind(db)),
-    exec: util.promisify(db.exec.bind(db)),
-  };
-
-  return SQL3;
+  const db = new AsyncDatabase(new Database(DB_PATH));
+  return db;
 };
 
 const runInitSqlQuery = async (SQL3: any) => {
@@ -41,4 +22,8 @@ export const initDb = async () => {
 
   console.log('Database initialized');
   return db;
+};
+
+export const getDB = () => {
+  return promisifySQLite3();
 };

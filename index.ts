@@ -1,24 +1,23 @@
 import { Request, Response } from 'express';
-import { initDb } from './src/initDb';
-import { insertExampleUserAndExercise } from './src/testQuery';
+import express from 'express';
+import cors from 'cors';
+import { AddressInfo } from 'net';
+import routes from './routes/routes';
 
-const express = require('express');
 const app = express();
-const cors = require('cors');
+
 require('dotenv').config();
 
 app.use(cors());
 app.use(express.static('public'));
+app.use(express.json());
 
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (_: Request, res: Response) => {
   res.sendFile(__dirname + '/views/index.html');
 });
 
-app.get('/test', async () => {
-  const db = await initDb();
-  await insertExampleUserAndExercise(db, Date.now().toString());
-});
+app.use('/api', routes);
 
 const listener = app.listen(process.env.PORT || 3000, () => {
-  console.log('Your app is listening on port ' + listener.address().port);
+  console.log('Your app is listening on port ' + (listener.address() as AddressInfo).port);
 });
