@@ -67,14 +67,14 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n   \"description\": \"full body workout\",\n   \"duration\": \"5400\",\n   \"date\": \"2024-05-20\"\n}",
+					"raw": "{\n   \"description\": \"full body workout\",\n   \"duration\": 5400,\n   \"date\": \"2024-09-26\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
 						}
 					}
 				},
-				"url": "{{baseUrl}}/users/5/exercises"
+				"url": "{{baseUrl}}/users/1/exercises"
 			},
 			"response": []
 		},
@@ -91,14 +91,14 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n   \"description\": \"full body workout\",\n   \"duration\": \"5400\",\n   \"date\": \"2024-05-50\"\n}",
+					"raw": "{\n   \"description\": \"full body workout\",\n   \"duration\": 5400,\n   \"date\": \"2024-05-50\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
 						}
 					}
 				},
-				"url": "{{baseUrl}}/users/5/exercises"
+				"url": "{{baseUrl}}/users/1/exercises"
 			},
 			"response": []
 		},
@@ -115,14 +115,14 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n   \"description\": \"full body workout\",\n   \"duration\": \"5400\"\n}",
+					"raw": "{\n   \"description\": \"full body workout\",\n   \"duration\": 5400\n}",
 					"options": {
 						"raw": {
 							"language": "json"
 						}
 					}
 				},
-				"url": "{{baseUrl}}/users/5/exercises"
+				"url": "{{baseUrl}}/users/1/exercises"
 			},
 			"response": []
 		},
@@ -146,7 +146,7 @@
 						}
 					}
 				},
-				"url": "{{baseUrl}}/users/5/exercises"
+				"url": "{{baseUrl}}/users/1/exercises"
 			},
 			"response": []
 		},
@@ -188,7 +188,40 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": "{{baseUrl}}/users/5/logs"
+				"url": "{{baseUrl}}/users/1/logs"
+			},
+			"response": []
+		},
+		{
+			"name": "Get logs - with params 1",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/users/1/logs?limit=10&from=2024-05-25&to=2024-09-26",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users",
+						"1",
+						"logs"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "10"
+						},
+						{
+							"key": "from",
+							"value": "2024-05-25"
+						},
+						{
+							"key": "to",
+							"value": "2024-09-26"
+						}
+					]
+				}
 			},
 			"response": []
 		},
