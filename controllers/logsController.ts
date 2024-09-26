@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import { getDB } from '../src/initDb';
-import { User } from '../models/models';
+import { Exercise, User } from '../models/models';
 
 const db = getDB();
 
+// todo: Add params validity: for example checking if limit is a number etc.
 export const getLogs = async (req: Request, res: Response) => {
   const userId = req.params._id;
 
@@ -16,7 +17,7 @@ export const getLogs = async (req: Request, res: Response) => {
       });
     }
 
-    const userExerciseLogs = await db.all(
+    let userExerciseLogs: Exercise[] = await db.all(
       `
       SELECT 
       Exercises.id,
@@ -29,6 +30,20 @@ export const getLogs = async (req: Request, res: Response) => {
     `,
       userId
     );
+
+    const { from, to, limit } = req.query;
+
+    if (limit) {
+      userExerciseLogs = userExerciseLogs.slice(0, +limit);
+    }
+
+    if (from) {
+      userExerciseLogs = userExerciseLogs.filter((exercise) => new Date(exercise.date) >= new Date(from as string));
+    }
+
+    if (to) {
+      userExerciseLogs = userExerciseLogs.filter((exercise) => new Date(exercise.date) <= new Date(to as string));
+    }
 
     return res.status(201).json({
       message: "User's exercises fetched successfully",

@@ -6,7 +6,6 @@ import { formatDate } from '../util';
 const db = getDB();
 
 // todo: Add body validity: for example date checking, checking if duration is a number etc.
-
 export const createExercise = async (req: Request, res: Response) => {
   const userId = req.params._id;
 

@@ -10,7 +10,9 @@ require('dotenv').config();
 
 app.use(cors());
 app.use(express.static('public'));
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (_: Request, res: Response) => {
   res.sendFile(__dirname + '/views/index.html');
