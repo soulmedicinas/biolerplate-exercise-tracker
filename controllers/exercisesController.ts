@@ -34,11 +34,14 @@ export const createExercise = async (req: Request, res: Response) => {
     let transformedDescription = description.trim();
     let transformedDate = date || formatDate(new Date());
 
+    // todo: Add correct date format checking
+
     const result = await db.run(
-      'INSERT INTO Exercises (description, duration, date) VALUES (?, ?, ?)',
+      'INSERT INTO Exercises (description, duration, date, userId) VALUES (?, ?, ?, ?)',
       transformedDescription,
       duration,
-      transformedDate
+      transformedDate,
+      userId
     );
 
     return res.status(201).json({
