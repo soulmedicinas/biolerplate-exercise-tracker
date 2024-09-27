@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import { getDB } from '../src/initDb';
 import { CreatedExerciseResponse } from '../models/models';
-import { formatDate } from '../util';
+import { formatDate, getResponseWhenServerFailed } from '../util';
 
 const db = getDB();
 
-// todo: Add body validity: for example date checking, checking if duration is a number etc.
+// todo: Add body validity (with some kind of library):
+// todo: check: date format and if duration is a number,
 export const createExercise = async (req: Request, res: Response) => {
   const userId = req.params._id;
 
@@ -43,19 +44,19 @@ export const createExercise = async (req: Request, res: Response) => {
       userId
     );
 
+    const createdExercise: CreatedExerciseResponse = {
+      userId: +userId,
+      exerciseId: result.lastID,
+      duration: duration,
+      description: transformedDescription,
+      date: transformedDate,
+    };
+
     return res.status(201).json({
       message: 'Exercise created',
-      exercise: {
-        userId: +userId,
-        exerciseId: result.lastID,
-        duration: duration,
-        description: transformedDescription,
-        date: transformedDate,
-      } as CreatedExerciseResponse,
+      exercise: createdExercise,
     });
   } catch (err) {
-    return res.status(500).json({
-      message: 'Something went wrong. Please try again later',
-    });
+    return getResponseWhenServerFailed(res);
   }
 };

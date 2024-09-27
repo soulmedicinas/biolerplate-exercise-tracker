@@ -19,9 +19,7 @@ const runInitSqlQuery = async (SQL3: any) => {
 export const initDb = async () => {
   const db = promisifySQLite3();
   await runInitSqlQuery(db);
-
   console.log('Database initialized');
-  return db;
 };
 
 export const getDB = () => {
