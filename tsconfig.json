@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",                  // JavaScript version
+    "module": "CommonJS",                // Module system
+    "outDir": "./dist",                  // Output directory
+    "rootDir": "./src",                  // Source directory
+    "strict": true,                      // Enable strict type checking
+    "esModuleInterop": true,             // Import compatibility
+    "resolveJsonModule": true,           // Allow importing JSON files
+    "skipLibCheck": true                 // Skip checking library files
+  },
+  "include": ["src/**/*"],               // Include all TS files in the src folder
+  "exclude": ["node_modules"]            // Exclude dependencies
+}

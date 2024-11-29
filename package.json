@@ -2,14 +2,14 @@
 	"name": "fcc-exercise-tracker",
 	"version": "0.1.0",
 	"description": "A REST API project, part of Free Code Camp's curriculum",
-	"main": "index.js",
+	"main": "index.ts",
 	"scripts": {
-		"start": "node index.js"
+		"start": "npx ts-node index.ts"
 	},
 	"dependencies": {
+		"cors": "^2.8.5",
 		"dotenv": "^8.2.0",
-		"express": "5.0.0",
-		"cors": "^2.8.5"
+		"express": "5.0.0"
 	},
 	"repository": {
 		"url": "https://github.com/freeCodeCamp/boilerplate-project-exercisetracker"
@@ -18,5 +18,14 @@
 	"keywords": [
 		"node",
 		"express"
-	]
+	],
+	"devDependencies": {
+		"@types/cors": "^2.8.17",
+		"@types/express": "^5.0.0",
+		"@types/node": "^22.10.1",
+		"nodemon": "^3.1.7",
+		"prettier": "^3.4.1",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.7.2"
+	}
 }
