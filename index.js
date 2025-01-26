@@ -63,34 +63,59 @@ app.post("/api/users/:_id/exercises", function (req, res) {
     //console.log("error: " + id)
 
     res.json({ error: "User ID does not exist" });
+  } else if (req.body.description == "") {
+    res.json({ error: "Description is required" });
+  } else if (req.body.duration == "" || parseInt(req.body.duration) == NaN) {
+    res.json({ error: "Duration is required and needs to be an integer" });
+  } else if (!isNaN(new Date(req.body.date)) == false && req.body.date != "") {
+    res.json({ error: "Date must be a valid date" });
   } else if (req.body.date == "") {
     let date = new Date();
+    let weekday = date.toLocaleString("en-us", { weekday: "short" });
+    let year = date.getFullYear();
+    let month = date.toLocaleString("default", { month: "short" });
+    let day = date.getDate().toString().padStart(2, "0");
+
+    let formattedDate = `${weekday} ${month} ${day} ${year}`;
 
     user.description = req.body.description;
-    user.duration = req.body.duration;
-    user.date = date;
+    user.duration = Number(req.body.duration);
+    user.date = formattedDate;
+
+    //testing
+    //console.log(formattedDate);
 
     res.json({
       username: user.username,
-      _id: user._id,
       description: user.description,
       duration: user.duration,
       date: user.date,
+      _id: user._id,
     });
   } else {
     //testing
     //console.log("else: " + id)
+    let date = new Date(req.body.date);
+    let weekday = date.toLocaleString("en-us", { weekday: "short" });
+    let year = date.getFullYear();
+    let month = date.toLocaleString("default", { month: "short" });
+    let day = date.getDate().toString().padStart(2, "0");
+
+    let formattedDate = `${weekday} ${month} ${day} ${year}`;
+
+    //testing
+    //console.log(formattedDate);
 
     user.description = req.body.description;
-    user.duration = req.body.duration;
-    user.date = req.body.date;
+    user.duration = Number(req.body.duration);
+    user.date = formattedDate;
 
     res.json({
       username: user.username,
-      _id: user._id,
       description: user.description,
       duration: user.duration,
       date: user.date,
+      _id: user._id,
     });
   }
 });
