@@ -42,13 +42,13 @@ app.get("/api/hello", function (req, res) {
 // POST request to create user
 
 app.post("/api/users", async (req, res) => {
-  const userObj = new User({
+  const user = new User({
     username: req.body.username,
     _id: (Math.random() + 1).toString(36).substring(2),
   });
 
   try {
-    const user = await userObj.save();
+    await user.save();
     userArray.push(user);
     res.json(user);
   } catch (err) {
