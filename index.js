@@ -21,15 +21,36 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
-  _id: {
+});
+
+const exerciseSchema = new Schema({
+  username: {
     type: String,
+    required: true,
+  },
+  user_id: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  duration: {
+    type: Number,
+    required: true,
+  },
+  date: {
+    type: Date,
     required: true,
   },
 });
 
 const User = mongoose.model("User", userSchema);
+const Exercise = mongoose.model("Exercise", exerciseSchema);
 
 module.exports = User;
+module.exports = Exercise;
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
@@ -40,17 +61,49 @@ app.get("/api/hello", function (req, res) {
 });
 
 // POST request to create user
-
 app.post("/api/users", async (req, res) => {
   const user = new User({
     username: req.body.username,
-    _id: (Math.random() + 1).toString(36).substring(2),
   });
 
   try {
     await user.save();
     userArray.push(user);
     res.json(user);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// GET request to get all users
+app.get("/api/users", function (req, res) {
+  res.json(userArray);
+});
+
+// POST request to create exercise
+app.post("/api/users/:_id/exercises", async (req, res) => {
+  const user = await User.findById({ _id: req.params._id }).exec();
+
+  req.body.date = new Date(req.body.date);
+
+  const exercise = new Exercise({
+    user_id: user._id,
+    username: user.username,
+    description: req.body.description,
+    duration: req.body.duration,
+    date: req.body.date,
+  });
+
+  try {
+    await exercise.save();
+    // userArray.push(user);
+    res.json({
+      username: user.username,
+      description: req.body.description,
+      duration: req.body.duration,
+      date: req.body.date.toDateString(),
+      _id: user._id,
+    });
   } catch (err) {
     console.log(err);
   }
