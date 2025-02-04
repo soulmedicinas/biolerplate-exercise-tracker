@@ -15,6 +15,7 @@ mongoose.connect(process.env.MONGO_URI);
 
 //variables
 const userArray = [];
+const logArray = [];
 
 const userSchema = new Schema({
   username: {
@@ -46,11 +47,32 @@ const exerciseSchema = new Schema({
   },
 });
 
+const logSchema = new Schema({
+  username: {
+    type: String,
+    required: true,
+  },
+  count: {
+    type: Number,
+    required: true,
+  },
+  _id: {
+    type: String,
+    required: true,
+  },
+  log: {
+    type: Array,
+    required: true,
+  },
+});
+
 const User = mongoose.model("User", userSchema);
 const Exercise = mongoose.model("Exercise", exerciseSchema);
+const Log = mongoose.model("Log", logSchema);
 
 module.exports = User;
 module.exports = Exercise;
+module.exports = Log;
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
@@ -65,9 +87,16 @@ app.post("/api/users", async (req, res) => {
   const user = new User({
     username: req.body.username,
   });
+  const log = new Log({
+    username: req.body.username,
+    count: 0,
+    _id: user._id,
+    log: [],
+  });
 
   try {
     await user.save();
+    await log.save();
     userArray.push(user);
     res.json(user);
   } catch (err) {
@@ -84,29 +113,71 @@ app.get("/api/users", function (req, res) {
 app.post("/api/users/:_id/exercises", async (req, res) => {
   const user = await User.findById({ _id: req.params._id }).exec();
 
-  req.body.date = new Date(req.body.date);
-
-  const exercise = new Exercise({
-    user_id: user._id,
-    username: user.username,
-    description: req.body.description,
-    duration: req.body.duration,
-    date: req.body.date,
-  });
-
   try {
-    await exercise.save();
-    // userArray.push(user);
-    res.json({
-      username: user.username,
-      description: req.body.description,
-      duration: req.body.duration,
-      date: req.body.date.toDateString(),
-      _id: user._id,
-    });
+    if (!user) {
+      res.json({ error: "User not found" });
+    } else {
+      req.body.date = req.body.date ? new Date(req.body.date) : new Date();
+
+      const exercise = new Exercise({
+        user_id: user._id,
+        username: user.username,
+        description: req.body.description,
+        duration: req.body.duration,
+        date: req.body.date,
+      });
+
+      await exercise.save();
+
+      await Log.findOneAndUpdate(
+        { _id: user._id },
+        {
+          $push: {
+            log: {
+              description: exercise.description,
+              duration: exercise.duration,
+              date: exercise.date.toDateString(),
+            },
+          },
+        },
+        { new: true },
+      );
+
+      await Log.findOneAndUpdate(
+        { _id: user._id },
+        { $inc: { count: 1 } },
+        { new: true },
+      );
+
+      // Added this in just to complete test 8
+      user.description = exercise.description;
+      user.duration = exercise.duration;
+      user.date = exercise.date;
+
+      userArray.push(user);
+
+      res.json({
+        username: user.username,
+        description: user.description,
+        duration: user.duration,
+        date: user.date.toDateString(),
+        _id: user._id,
+      });
+    }
   } catch (err) {
     console.log(err);
   }
+});
+
+// GET request to get user's exercise log
+app.get("/api/users/:_id/logs", async (req, res) => {
+  const log = await Log.findById({ _id: req.params._id }).exec();
+  if (!log) {
+    res.send("Could not find log");
+    return;
+  }
+
+  res.json(log);
 });
 
 /*
