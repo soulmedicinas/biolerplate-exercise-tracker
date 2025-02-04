@@ -15,7 +15,6 @@ mongoose.connect(process.env.MONGO_URI);
 
 //variables
 const userArray = [];
-const logArray = [];
 
 const userSchema = new Schema({
   username: {
@@ -171,13 +170,56 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
 
 // GET request to get user's exercise log
 app.get("/api/users/:_id/logs", async (req, res) => {
-  const log = await Log.findById({ _id: req.params._id }).exec();
-  if (!log) {
+  const { from, to, limit } = req.query;
+
+  const logInfo = await Log.findById({ _id: req.params._id }).exec();
+  if (!logInfo) {
     res.send("Could not find log");
     return;
   }
 
-  res.json(log);
+  if (from || to || limit) {
+    let dateObj = {};
+    if (from) {
+      dateObj["$gte"] = new Date(from);
+    }
+    if (to) {
+      dateObj["$lte"] = new Date(to);
+    }
+    let filter = {
+      user_id: req.params._id,
+    };
+    if (from || to) {
+      filter.date = dateObj;
+    }
+
+    const exercises = await Exercise.find(filter).limit(limit);
+
+    const log = exercises.map((e) => ({
+      description: e.description,
+      duration: e.duration,
+      date: e.date.toDateString(),
+    }));
+
+    // console.log(from + " " + to + " " + limit);
+    // console.log("LOG:" + log);
+    // console.log("LOGINFO:" + logInfo);
+    // console.log({
+    //   username: logInfo.username,
+    //   count: exercises.length,
+    //   _id: logInfo._id,
+    //   log: log,
+    // });
+
+    res.json({
+      username: logInfo.username,
+      count: exercises.length,
+      _id: logInfo._id,
+      log: log,
+    });
+  } else {
+    res.json(logInfo);
+  }
 });
 
 /*
