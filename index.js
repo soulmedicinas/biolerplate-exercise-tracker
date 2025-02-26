@@ -1,108 +1,138 @@
-const express = require('express');
-const {ObjectId} = require('mongodb');
-const app = express()
+const express = require("express");
+const app = express();
+const cors = require("cors");
+const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
+require("dotenv").config();
 
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(express.static("public"));
 
-const logs = [];
+const uri = process.env.MONGO_URI || 'mongodb+srv://se:jinuka123@cluster2.1lbi0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster2';
 
-app.use(express.static('./public'));
-app.use(express.urlencoded({extended:false}));
+mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log("✅ Connected to DB"))
+  .catch(err => console.error("❌ DB Connection Error:", err));
 
-
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/views/index.html')
+// Define Schemas & Models
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true },
 });
 
-app.post('/api/users',(req,res)=>{
-    const {username} = req.body;
-    if(!username){
-        res.status(400).send("Error : Username not found");
-    }
-    logs.push({"username" : username, "_id" : (new ObjectId()).toString() ,"count": 0 ,"log" : []});    
-    const getUsers = logs.map(el=>{
-        return { "username" : el["username"], "_id" : el["_id"]};
-    });
-    const thisUser = getUsers.filter(el=>{
-        return el["username"] === username;
-    });
-    res.json(
-        thisUser[0]
-    );
+const exerciseSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, required: true },
+  description: { type: String, required: true },
+  duration: { type: Number, required: true },
+  date: { type: Date, required: true },
 });
 
-app.get('/api/users',(req,res)=>{
-    const getUsers = logs.map(el=>{
-        return {"_id" : el["_id"], "username" : el["username"]};
-    });
-    res.json(getUsers);
+const User = mongoose.model("User", userSchema);
+const Exercise = mongoose.model("Exercise", exerciseSchema);
+
+// Create a new user ✅
+app.post("/api/users", async (req, res) => {
+  try {
+    const newUser = new User({ username: req.body.username });
+    const savedUser = await newUser.save();
+    res.json(savedUser);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.post('/api/users/:_id/exercises',(req,res)=>{
-const { _id } = req.params;
-const { description, duration } = req.body;
-let { date } = req.body;
-const user = logs.find(user => user._id === _id);
-    if(!description || isNaN(duration) || !duration){
-        return res.status(404).send("Invalid ID or missing description/duration");
-    }
-    if (!user) {
-        return res.status(404).send("Error: User not found");
-    }
-    if (!date) {
-        date = new Date().toDateString();
-    } else {
-        date = new Date(date).toDateString();
+// Get all users ✅
+app.get("/api/users", async (req, res) => {
+  try {
+    const users = await User.find({}, "username _id").exec();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: "Error fetching users" });
+  }
+});
+
+// Add an exercise ✅ FIXED: Proper date handling & response format
+app.post("/api/users/:_id/exercises", async (req, res) => {
+  try {
+    const { _id } = req.params;
+    const { description, duration, date } = req.body;
+
+    if (!description || !duration) {
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
-        const filteredLogsIdx = logs.findIndex(el=>{
-            return el["_id"] === _id.toString();
-        });
-        
-        user.log.push({ description, duration: parseInt(duration), date });
-        user.count++;
+    const user = await User.findById(_id);
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-        res.json({
-        _id: user._id,
-        username: user.username,
-        date,
-        duration: parseInt(duration),
-        description
-        });
+    const exerciseDate = date ? new Date(date) : new Date();
+    if (isNaN(exerciseDate.getTime())) {
+      return res.status(400).json({ error: "Invalid date format" });
+    }
+
+    const newExercise = new Exercise({
+      userId: _id,
+      description,
+      duration: parseInt(duration),
+      date: exerciseDate,
     });
 
-app.get('/api/users/:_id/logs',(req,res)=>{
-    const {_id} = req.params;
-    const {limit,from,to} = req.query;
+    const savedExercise = await newExercise.save();
 
-    const qlog = logs.filter(loger => loger["_id"] === _id.toString());
+    res.json({
+      _id: user._id,
+      username: user.username,
+      description: savedExercise.description,
+      duration: savedExercise.duration,
+      date: savedExercise.date.toDateString(),
+    });
 
-    if(qlog){
-        let filteredLogs = qlog[0]["log"];
+  } catch (err) {
+    console.error("❌ Error in POST /api/users/:_id/exercises:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
-        if (from && to) {
-            filteredLogs = filteredLogs.filter(log => {
-                const logDate = new Date(log["date"]);
-                return logDate >= new Date(from) && logDate <= new Date(to);
-            });
-        }
+// Get user logs ✅ FIXED: count, log format, query parameters
+app.get("/api/users/:_id/logs", async (req, res) => {
+  try {
+    const { from, to, limit } = req.query;
+    const { _id } = req.params;
 
-        if (limit) {
-            filteredLogs = filteredLogs.slice(0, parseInt(limit));
-        }
+    const user = await User.findById(_id);
+    if (!user) return res.status(404).json({ error: "User not found" });
 
+    let filter = { userId: _id };
+    let dateFilter = {};
 
-        res.json({
-            username: qlog[0]["username"],
-            _id: qlog[0]["_id"],
-            count: filteredLogs.length,
-            log: filteredLogs
-        });
-    }
-    else{
-        res.status(500).send("error Invalid Id or Query");
-    }
-})
+    if (from) dateFilter["$gte"] = new Date(from);
+    if (to) dateFilter["$lte"] = new Date(to);
+    if (from || to) filter.date = dateFilter;
+
+    const exercises = await Exercise.find(filter)
+      .sort({ date: 1 })
+      .limit(parseInt(limit) || 0)
+      .exec();
+
+    const log = exercises.map(ex => ({
+      description: ex.description.toString(),
+      duration: Number(ex.duration),
+      date: ex.date.toDateString(),
+    }));
+
+    res.json({
+      _id: user._id,
+      username: user.username,
+      count: log.length,
+      log,
+    });
+
+  } catch (err) {
+    console.error("❌ Error in GET /api/users/:_id/logs:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 const listener = app.listen(process.env.PORT || 3000, () => {
-    console.log('Your app is listening on port ' + listener.address().port)
+  console.log("Your app is listening on port " + listener.address().port);
 });
