@@ -26,22 +26,38 @@ exports.getUsers = (callback) => {
 exports.addExerciseToUser = (userId, data, callback) => {
   const { description, duration, date } = data;
 
-  const parsedDuration = parseInt(duration);
+  const errors = [];
+
+  if (!userId) {
+    errors.push("Missing user ID, please provide a user ID!");
+  }
+
   if (
     !description ||
     typeof description !== "string" ||
     description.trim() === ""
   ) {
-    return callback(new Error("Description is required"));
+    errors.push("Description is required, please add a description!");
   }
 
+  const parsedDuration = parseInt(duration);
   if (isNaN(parsedDuration) || parsedDuration <= 0) {
-    return callback(new Error("Duration must be a positive number"));
+    errors.push("Duration must be a positive number");
   }
 
-  const dateObj = date ? new Date(date) : new Date();
-  if (isNaN(dateObj.getTime())) {
-    return callback(new Error("Invalid date format"));
+  if (!date) {
+    errors.push("Date is required, please add a date!");
+  } else {
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) {
+      errors.push("Invalid date format, should be YYYY-MM-DD");
+    }
+  }
+
+  if (errors.length > 0) {
+    const validationError = new Error("Validation failed");
+    validationError.validationErrors = errors;
+    return callback(validationError);
   }
 
   const isoDate = dateObj.toISOString().split("T")[0];

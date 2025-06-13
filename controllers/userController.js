@@ -29,6 +29,10 @@ exports.addExercise = (req, res) => {
         return res.status(404).json({ error: "User not found" });
       }
 
+      if (err.validationErrors && Array.isArray(err.validationErrors)) {
+        return res.status(400).json({ errors: err.validationErrors });
+      }
+
       if (
         err.message === "Description is required" ||
         err.message === "Duration must be a positive number" ||
