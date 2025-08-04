@@ -16,14 +16,18 @@ const userSchema = new Schema({
 
 const User = mongoose.model('User', userSchema);
 
+function formatDate(date) {
+  return new Date(date).toDateString(); // Example: "Mon Aug 04 2025"
+};
+
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
 
 const exerciseSchema = new Schema({
-  userId: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   description: { type: String, required: true },
-  duration: {type: Number},
+  duration: { type: Number, required: true },
   date: { type: Date, required: true }
 });
 
@@ -112,6 +116,14 @@ app.get('/api/users/:_id/logs', async (req, res) => {
     res.status(500).json({ error: err.message });
     }
   });
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
