@@ -5,24 +5,44 @@ require('dotenv').config()
 const mongoose = require('mongoose');
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
-app.use(cors())
-app.use(express.static('public'))
+app.use(cors());
+app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
 
 const Schema = mongoose.Schema;
 
+// get username
 const userSchema = new Schema({
     username: { type: String, required: true }
 });
 
 const User = mongoose.model('User', userSchema);
 
-function formatDate(date) {
-  return new Date(date).toDateString(); // Example: "Mon Aug 04 2025"
-};
-
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
+
+// POST to /api/users with form data "username" to create a new user
+app.post('/api/users', async (req, res) => {
+  try {
+    const { username } = req.body;
+
+    if (!username) {
+      return res.status(400).json({ error: 'Username is required' });
+    }
+
+    const newUser = new User({ username });
+    const savedUser = await newUser.save();
+
+    res.json({ username: savedUser.username, _id: savedUser._id });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+function formatDate(date) {
+  return new Date(date).toDateString(); // Example: "Mon Aug 04 2025"
+};
 
 const exerciseSchema = new Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
